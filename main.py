@@ -14,8 +14,7 @@ if __name__ == '__main__':
         # df = pd.read_csv("A-1m_topo.csv")
         df.index = df["Elektrode nr "]
         df.plot.scatter(x = "X", y = "Y", c = "Z" ,colormap='viridis',title = sheet)
-        plt.savefig(sheet + ".png")
-        plt.show()
+        plt.savefig("./pictures/"+sheet + ".png")
         df = df.reindex(range(1, df.index.max() + 1)).interpolate(method='linear')
-        df[["X", "Y", "Z"]].to_csv("topo" + sheet + ".csv")
+        df[["X", "Y", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv")
     xls.close()
