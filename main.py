@@ -2,29 +2,68 @@
 
 import pandas as pd
 from matplotlib import pyplot as plt
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+import matplotlib
+import rasterio
+import rasterio.plot
+import utm
 
+matplotlib.use('TkAgg')
 
-# Press the green button in the gutter to run the script.
+def make_string(df_):
+    outstring = ""
+    outstring += "topo\n2\n%i\n" % len(df_)
+    outstring += df_["Z"].to_string(header=False)
+    outstring += "\ntopo\n0\n0\n0\n0\n"
+    return outstring
+
+def open_raster(filename="./geotiffs/data/dtm1_33_123_113.tif"):
+    filename = "geotiffs/data/dtm1_33_125_115.tif"
+    tiff = rasterio.open(filename)
+    rasterio.plot.show(tiff, title=filename)
+
 if __name__ == '__main__':
+    """UTM 32 to UTM33 converter"""
+    filename = "geotiffs/data/dtm1_33_125_115.tif"
+    tiff = rasterio.open(filename)
+    band1 = tiff.read(1)
+
     xls = pd.ExcelFile("GPS_ERT.xlsx")
-    for sheet in xls.sheet_names[0:1]:
-
+    i = 0
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    for sheet in xls.sheet_names:#[i:i+1]:
+        print(sheet)
         df = pd.read_excel(xls,sheet)
-        # df = pd.read_csv("A-1m_topo.csv")
-        df["Elektrode nr "] = df["Elektrode nr "] - 1
         df.index = df["Elektrode nr "]
-        df.plot(x="Elektrode nr ",y="Z")
-        outstring = ""
-        outstring+="topo\n2\n%i\n" % len(df)
-        outstring+= df["Z"].to_string(header=False)
-        outstring +="\ntopo\n0\n0\n0\n0\n"
-        print(outstring)
-        plt.show
-        #df.plot.scatter(x = "X", y = "Y", c = "Z" ,colormap='viridis',title = sheet)
-        #plt.savefig("./pictures/"+sheet + ".png")
-        #df = df.reindex(range(1, df.index.max() + 1)).interpolate(method='linear')
-        #df[["X", "Y", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv")
 
+
+        df = df.reindex(range(1, df.index.max()+1)).interpolate(method='linear')
+        # df["Elektrode nr "] = df["Elektrode nr "] - 1
+
+        # df = df.iloc[0]
+        latlon = utm.to_latlon(easting=df["X"], northing=df["Y"], zone_letter="N", zone_number=32)
+        utm33 = utm.from_latlon(latitude = latlon[0], longitude =  latlon[1],force_zone_number=33,force_zone_letter="N")
+        x,y = tiff.index(utm33[0], utm33[1])
+        df["Z"] = band1[x,y]
+
+        # df["Elektrode nr "] = df["Elektrode nr "] - 1
+        df.index = df["Elektrode nr "]
+
+        stringtopo = make_string(df)
+
+        print(stringtopo)
+#         ax.set_title(sheet)
+#         # plt.plot(df["X"].values,df["Y"].values,df["Z"].values)
+#         ax.plot(df["X"].values,df["Y"].values,df["Z"].values,label=sheet)
+# #
+# #         #df.plot.scatter(x = "X", y = "Y", c = "Z" ,colormap='viridis',title = sheet)
+# #         #plt.savefig("./pictures/"+sheet + ".png")
+# #         #df = df.reindex(range(1, df.index.max() + 1)).interpolate(method='linear')
+        df[["X", "Y", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv")
+#     ax.set_zlim3d([100, 200])
+#     ax.legend(loc="upper left")
+#     plt.show()
     xls.close()
