@@ -14,8 +14,8 @@ matplotlib.use('TkAgg')
 
 def make_string(df_):
     outstring = ""
-    outstring += "topo\n2\n%i\n" % len(df_)
-    outstring += df_["Z"].to_string(header=False)
+    outstring += "topo\n4\n%i\n" % len(df_)
+    outstring += df_[["X","Y","Z"]].to_string(header=False)
     outstring += "\ntopo\n0\n0\n0\n0\n"
     return outstring
 
@@ -31,10 +31,12 @@ if __name__ == '__main__':
     band1 = tiff.read(1)
 
     xls = pd.ExcelFile("GPS_ERT.xlsx")
-    i = 0
+    i = 2
     fig = plt.figure()
     ax = plt.axes(projection="3d")
-    for sheet in xls.sheet_names:#[i:i+1]:
+    i = 1
+    df_app = pd.DataFrame()
+    for sheet in xls.sheet_names[:]:
         print(sheet)
         df = pd.read_excel(xls,sheet)
         df.index = df["Elektrode nr "]
@@ -50,20 +52,29 @@ if __name__ == '__main__':
         df["Z"] = band1[x,y]
 
         # df["Elektrode nr "] = df["Elektrode nr "] - 1
+        df["Elektrode nr "] = (df["Elektrode nr "]).astype("int")
         df.index = df["Elektrode nr "]
 
-        stringtopo = make_string(df)
 
-        print(stringtopo)
+
+
 #         ax.set_title(sheet)
 #         # plt.plot(df["X"].values,df["Y"].values,df["Z"].values)
 #         ax.plot(df["X"].values,df["Y"].values,df["Z"].values,label=sheet)
 # #
 # #         #df.plot.scatter(x = "X", y = "Y", c = "Z" ,colormap='viridis',title = sheet)
 # #         #plt.savefig("./pictures/"+sheet + ".png")
-# #         #df = df.reindex(range(1, df.index.max() + 1)).interpolate(method='linear')
-        df[["X", "Y", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv")
-#     ax.set_zlim3d([100, 200])
-#     ax.legend(loc="upper left")
-#     plt.show()
+        df['label'] = df["Elektrode nr "].apply(lambda x: f"{i:n} {x:n}")
+        i+=1
+
+        df.index = df['label']
+
+
+        df_app = df_app.append(df)
     xls.close()
+    df_app.index = df_app['label']
+    df_app["buried"] = 0
+    df_app["x"] = df_app["X"]
+    df_app["y"] = df_app["Y"]
+    df_app["z"] = df_app["Z"]
+    df_app[["x", "y", "z","buried"]].to_csv("./topofiles/electrodes3d.csv")
