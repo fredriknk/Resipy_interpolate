@@ -74,8 +74,6 @@ if __name__ == '__main__':
             stringtopo = make_string(df)
             df[["Elektrode nr ","X_","Z"]].to_csv("./topofiles/topo" + sheet + ".csv",header=["label","X","Z"],index=False)
 
-
-
         df['label'] = df["Elektrode nr "].apply(lambda x: f"{i:n} {x:n}")
         i+=1
 
