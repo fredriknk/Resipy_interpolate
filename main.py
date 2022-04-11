@@ -79,9 +79,10 @@ if __name__ == '__main__':
 
         df.index = df['label']
 
+        df_app = pd.concat([df_app,df])
 
-        df_app = df_app.append(df)
     xls.close()
+
     df_app.index = df_app['label']
     df_app["buried"] = 0
     df_app["x"] = df_app["X"]
