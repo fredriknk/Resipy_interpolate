@@ -3,14 +3,14 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import axes3d
 import matplotlib
 import rasterio
 import rasterio.plot
 import utm
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 def make_string(df_):
     outstring = ""
@@ -24,16 +24,18 @@ def open_raster(filename="./geotiffs/data/dtm1_33_123_113.tif"):
     tiff = rasterio.open(filename)
     rasterio.plot.show(tiff, title=filename)
 
+make_topo_files = True
+
 if __name__ == '__main__':
     """UTM 32 to UTM33 converter"""
     filename = "geotiffs/data/dtm1_33_125_115.tif"
     tiff = rasterio.open(filename)
     band1 = tiff.read(1)
-
-    xls = pd.ExcelFile("GPS_ERT.xlsx")
+    excel_filename = "KORRIGERT_GPS_MH.xlsx"#"GPS_ERT.xlsx"
+    xls = pd.ExcelFile(excel_filename)
     i = 2
-    fig = plt.figure()
-    ax = plt.axes(projection="3d")
+    # fig = plt.figure()
+    # ax = plt.axes(projection="3d")
     i = 1
     df_app = pd.DataFrame()
     for sheet in xls.sheet_names[:]:
@@ -55,15 +57,10 @@ if __name__ == '__main__':
         df["Elektrode nr "] = (df["Elektrode nr "]).astype("int")
         df.index = df["Elektrode nr "]
 
+        if make_topo_files == True:
+            stringtopo = make_string(df)
+            df[["X", "Y", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv")
 
-
-
-#         ax.set_title(sheet)
-#         # plt.plot(df["X"].values,df["Y"].values,df["Z"].values)
-#         ax.plot(df["X"].values,df["Y"].values,df["Z"].values,label=sheet)
-# #
-# #         #df.plot.scatter(x = "X", y = "Y", c = "Z" ,colormap='viridis',title = sheet)
-# #         #plt.savefig("./pictures/"+sheet + ".png")
         df['label'] = df["Elektrode nr "].apply(lambda x: f"{i:n} {x:n}")
         i+=1
 
