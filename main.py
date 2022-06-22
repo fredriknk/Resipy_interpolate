@@ -29,20 +29,21 @@ def show_line(df,ax):
 def poput_plot():
     matplotlib.use('TkAgg')
 
+make_3d_topo_file = True
 make_topo_files = True
-make_3d_topo_files = True
+make_3d_topo_files = False
 
 poput_plot()
 
 if __name__ == '__main__':
-    #filename_tiff = "geotiffs/data/dtm1_33_124_113.tif"#MADS
-    filename_tiff = "geotiffs/data/dtm1_33_125_115.tif"#MALIN
+    filename_tiff = "geotiffs/data/dtm1_33_124_113.tif"#MADS
+    #filename_tiff = "geotiffs/data/dtm1_33_125_115.tif"#MALIN
 
     tiff = rasterio.open(filename_tiff)
     print(tiff.bounds)
     band1 = tiff.read(1)
     # excel_filename = "GPS_ert_mads.xlsx"
-    excel_filename = "KORRIGERT_GPS_MH.xlsx"#"GPS_ERT.xlsx"
+    excel_filename = "GPS_undervisning.xlsx"#"GPS_ERT.xlsx"
     xls = pd.ExcelFile(excel_filename)
     fig = plt.figure()
     # ax = plt.subplots(1,1)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     for sheet in xls.sheet_names[:]:
         print(sheet)
         df = pd.read_excel(xls, sheet)
-        df.index = df["Elektrode nr "]
+        df.index = df["Elektrode nr"]
 
         df = df.reindex(range(1, df.index.max()+1)).interpolate(method='linear')
 
@@ -63,8 +64,8 @@ if __name__ == '__main__':
         df["Z"] = band1[x,y]
 
         # df["Elektrode nr "] = df["Elektrode nr "] - 1
-        df["Elektrode nr "] = (df["Elektrode nr "]).astype("int")
-        df.index = df["Elektrode nr "]
+        df["Elektrode nr"] = (df["Elektrode nr"]).astype("int")
+        df.index = df["Elektrode nr"]
         df[["dX","dY"]] = df[["X","Y"]].diff().fillna(0)
         df["X_"] = df.apply(lambda x: m.sqrt(x['dX']**2+ x['dY']**2), axis=1).cumsum()
 
@@ -72,9 +73,12 @@ if __name__ == '__main__':
 
         if make_topo_files == True:
             stringtopo = make_string(df)
-            df[["Elektrode nr ","X_","Z"]].to_csv("./topofiles/topo" + sheet + ".csv",header=["label","X","Z"],index=False)
+            df[["Elektrode nr","X_","Z"]].to_csv("./topofiles/topo" + sheet + ".csv",header=["label","X","Z"],index=False)
 
-        df['label'] = df["Elektrode nr "].apply(lambda x: f"{i:n} {x:n}")
+        if make_3d_topo_file == True:
+            stringtopo = make_string(df)
+            df[["Elektrode nr","X","Y","Z"]].to_csv("./topofiles/topo3d" + sheet + ".csv",header=["label","X","Y","Z"],index=False)
+        df['label'] = df["Elektrode nr"].apply(lambda x: f"{i:n} {x:n}")
         i+=1
 
         df.index = df['label']
