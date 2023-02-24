@@ -2,14 +2,14 @@
 
 import pandas as pd
 from matplotlib import pyplot as plt
-import numpy as np
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import axes3d
 import matplotlib
 import rasterio
 import rasterio.plot
 import utm
 import math as m
+from owslib.wms import WebMapService
+import os
+import wcs_lib
 
 def make_string(df_):
     outstring = ""
@@ -19,9 +19,34 @@ def make_string(df_):
     return outstring
 
 def open_raster(filename="./geotiffs/data/dtm1_33_123_113.tif"):
-    filename = "geotiffs/data/dtm1_33_125_115.tif"
+    filename = "geodata/data/dtm1_33_125_115.tif"
     tiff = rasterio.open(filename)
     rasterio.plot.show(tiff, title=filename)
+
+def download_wms_map(wms_url, layer_name, bbox, output_file):
+    # Connect to the WMS server
+    wms = WebMapService(wms_url, version='1.3.0')
+
+    # Request the map cutout from the server
+    img = wms.getmap(
+        layers=[layer_name],
+        srs='EPSG:4326',
+        bbox=bbox,
+        size=(256, 256),
+        format='image/png',
+        transparent=True
+    ).read()
+
+    with open(output_file, 'wb') as f:
+        f.write(img)
+
+def plot_geotiff(output_file):
+    # Open the GeoTIFF using Rasterio
+    with rasterio.open(output_file) as dataset:
+        array = dataset.read(1)
+        # Plot the raster data using Matplotlib
+        plt.imshow(array)
+        plt.show()
 
 def show_line(df,ax):
     ax.plot(df["X"].values,df["Y"].values,df["Z"].values,label=sheet)
@@ -29,14 +54,34 @@ def show_line(df,ax):
 def poput_plot():
     matplotlib.use('TkAgg')
 
-make_3d_topo_file = True
-make_topo_files = True
-make_3d_topo_files = False
-
-poput_plot()
-
 if __name__ == '__main__':
-    filename_tiff = "geotiffs/data/dtm1_33_124_113.tif"#MADS
+    # Define the inputs
+    wms_url = 'https://wms.geonorge.no/skwms1/wms.hoyde-dom'
+    layer_name = 'DOM'
+    bbox = (10.73758, 60.22762, 10.74409, 60.23237)  # (minx, miny, maxx, maxy)
+    output_file = f"{bbox[0]}-{bbox[1]}-{bbox[2]}-{bbox[3]}".replace(".","_")+".tif"
+
+    # Download the map cutout
+    print(f"check if exist:{output_file}")
+    if not os.path.exists(output_file):
+        print("File doesnt exits, downloading")
+        download_wms_map(wms_url, layer_name, bbox, output_file)
+
+    print("Plotting map")
+    #plot_geotiff(output_file)
+    with rasterio.open(output_file) as dataset:
+        array = dataset.read(1)
+    print("starting work")
+
+
+def old_fun():
+    make_3d_topo_file = True
+    make_topo_files = True
+    make_3d_topo_files = False
+
+    poput_plot()
+
+    filename_tiff = "geodata/data/dtm1_33_124_113.tif"  #MADS
     #filename_tiff = "geotiffs/data/dtm1_33_125_115.tif"#MALIN
 
     tiff = rasterio.open(filename_tiff)
