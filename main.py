@@ -41,7 +41,6 @@ if __name__ == '__main__':
 
     excel_filename = "GPS_punkt_Slettebakken.xlsx"
     xls = pd.ExcelFile(excel_filename)
-    xls.sheet_names[:1]
     for sheet in xls.sheet_names[:]:
         print(sheet)
         df = pd.read_excel(xls, sheet)
@@ -71,10 +70,12 @@ if __name__ == '__main__':
         map_tiff, dtm_tiff = wcs_lib.get_data(bbox,resolution_map=0.2,png=False,DTM=False)
         dtm_tiff_band1 = dtm_tiff.read(1)
 
+        poput_plot()
         fig, ax = plt.subplots(1, figsize=(12, 15))
         rasterio.plot.show((map_tiff,1), cmap='gray',alpha=0.9, ax=ax)
         rasterio.plot.show(dtm_tiff, contour=True,alpha=0.4, ax=ax)
         i=0
+
         for fn in df["File"].unique()[:]:
             df_ = df[df["File"] == fn]
             df_["Elektrode_"] =  df_["Elektrode"]+ 96 * i
