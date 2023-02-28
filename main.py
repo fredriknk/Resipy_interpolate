@@ -10,6 +10,7 @@ import math as m
 from owslib.wms import WebMapService
 import os
 import wcs_lib
+import syscal_converter
 
 
 def make_string(df_):
@@ -36,7 +37,7 @@ def poput_plot():
 
 if __name__ == '__main__':
 
-    make_topo_files = True
+    make_topo_files = False
     make_3d_topo_file = True
 
     excel_filename = "GPS_punkt_Slettebakken.xlsx"
@@ -70,17 +71,19 @@ if __name__ == '__main__':
         map_tiff, dtm_tiff = wcs_lib.get_data(bbox,resolution_map=0.2,png=False,DTM=False)
         dtm_tiff_band1 = dtm_tiff.read(1)
 
-        poput_plot()
         fig, ax = plt.subplots(1, figsize=(12, 15))
         rasterio.plot.show((map_tiff,1), cmap='gray',alpha=0.9, ax=ax)
         rasterio.plot.show(dtm_tiff, contour=True,alpha=0.4, ax=ax)
-        i=0
+        i=1
+
+        last_electrode = 0
 
         for fn in df["File"].unique()[:]:
             df_ = df[df["File"] == fn]
-            df_["Elektrode_"] =  df_["Elektrode"]+ 96 * i
-            df_.index = df_["Elektrode_"]
+            df_.index = df_["Elektrode"]
             df_ = df_.reindex(range(df_.index.min(), df_.index.max() + 1)).interpolate(method='linear')
+            df_["i"] = str(i) + " "
+            df_["Elektrode_"] = df_["i"]+df_["Elektrode"].map('{:.0f}'.format)
             df_[["dX", "dY"]] = df_[["X", "Y"]].diff().fillna(0)
             df_["X_"] = df_.apply(lambda x: m.sqrt(x['dX'] ** 2 + x['dY'] ** 2), axis=1).cumsum()
             df_["Z"] = dtm_tiff_band1[dtm_tiff.index(df_.X,df_.Y)]
@@ -96,80 +99,10 @@ if __name__ == '__main__':
                 stringtopo = make_string(df_)
                 df_[["Elektrode", "X", "Y", "Z"]].to_csv("./topofiles/topo3d" + fn + ".csv",
                                                            header=["label", "X", "Y", "Z"], index=False)
-                if i ==0:
-                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv("./topofiles/topo3d_ALL.csv", header=["label", "X", "Y", "Z"],index=False)
+                if i ==1:
+                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv("./topofiles/topo3d_ALL.csv", header=["label", "x", "y", "z"],index=False)
                 else:
                     df_[["Elektrode_", "X", "Y", "Z"]].to_csv("./topofiles/topo3d_ALL.csv", index=False, mode = 'a',header=False)
             i += 1
         ax.legend()
         fig.show()
-
-
-def old_fun():
-    make_3d_topo_file = True
-    make_topo_files = True
-    make_3d_topo_files = False
-
-    poput_plot()
-
-    filename_tiff = "geodata/data/dtm1_33_124_113.tif"  # MADS
-    # filename_tiff = "geotiffs/data/dtm1_33_125_115.tif"#MALIN
-
-    tiff = rasterio.open(filename_tiff)
-    print(tiff.bounds)
-    band1 = tiff.read(1)
-    # excel_filename = "GPS_ert_mads.xlsx"
-    excel_filename = "GPS_undervisning.xlsx"  # "GPS_ERT.xlsx"
-    xls = pd.ExcelFile(excel_filename)
-    fig = plt.figure()
-    # ax = plt.subplots(1,1)
-    ax = plt.axes(projection="3d")
-    i = 1
-    df_app = pd.DataFrame()
-
-    for sheet in xls.sheet_names[:]:
-        print(sheet)
-        df = pd.read_excel(xls, sheet)
-        df.index = df["Elektrode nr"]
-
-        df = df.reindex(range(1, df.index.max() + 1)).interpolate(method='linear')
-
-        latlon = utm.to_latlon(easting=df["X"], northing=df["Y"], zone_letter="N", zone_number=32)
-        utm33 = utm.from_latlon(latitude=latlon[0], longitude=latlon[1], force_zone_number=33, force_zone_letter="N")
-        x, y = tiff.index(utm33[0], utm33[1])
-        df["Z"] = band1[x, y]
-
-        # df["Elektrode nr "] = df["Elektrode nr "] - 1
-        df["Elektrode nr"] = (df["Elektrode nr"]).astype("int")
-        df.index = df["Elektrode nr"]
-        df[["dX", "dY"]] = df[["X", "Y"]].diff().fillna(0)
-        df["X_"] = df.apply(lambda x: m.sqrt(x['dX'] ** 2 + x['dY'] ** 2), axis=1).cumsum()
-
-        show_line(df, ax)
-
-        if make_topo_files == True:
-            stringtopo = make_string(df)
-            df[["Elektrode nr", "X_", "Z"]].to_csv("./topofiles/topo" + sheet + ".csv", header=["label", "X", "Z"],
-                                                   index=False)
-
-        if make_3d_topo_file == True:
-            stringtopo = make_string(df)
-            df[["Elektrode nr", "X", "Y", "Z"]].to_csv("./topofiles/topo3d" + sheet + ".csv",
-                                                       header=["label", "X", "Y", "Z"], index=False)
-        df['label'] = df["Elektrode nr"].apply(lambda x: f"{i:n} {x:n}")
-        i += 1
-
-        df.index = df['label']
-
-        df_app = pd.concat([df_app, df])
-
-    xls.close()
-
-    df_app.index = df_app['label']
-    df_app["buried"] = 0
-    df_app["x"] = df_app["X"]
-    df_app["y"] = df_app["Y"]
-    df_app["z"] = df_app["Z"]
-    if make_3d_topo_files == True:
-        df_app[["x", "y", "z", "buried"]].to_csv("./topofiles/electrodes3d.csv")
-    plt.show()

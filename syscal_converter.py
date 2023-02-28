@@ -1,12 +1,12 @@
 import csv
 
-def resinv_converter(file_name,save_name,add=5):
+def converter(file_name,save_name,add=5):
     # Open the file for reading and create a CSV reader
     with open(file_name, 'r') as csv_file:
         reader = csv.reader(csv_file, delimiter=' ')
 
         # Open a new file for writing and create a CSV writer
-        with open('syscal_files/output.csv', 'w', newline='') as output_file:
+        with open(save_name, 'w', newline='') as output_file:
             writer = csv.writer(output_file, delimiter=' ')
 
             # Loop through each row of the input file
@@ -16,10 +16,10 @@ def resinv_converter(file_name,save_name,add=5):
                 if len(row) == 16 and lineno >8 :
 
                     # Write the updated row to the output file
-                    row[2] = str(float(row[2]) + X)
-                    row[5] = str(float(row[5]) + X)
-                    row[8] = str(float(row[8]) + X)
-                    row[11] = str(float(row[11]) + X)
+                    row[2] = str(float(row[2]) + add)
+                    row[5] = str(float(row[5]) + add)
+                    row[8] = str(float(row[8]) + add)
+                    row[11] = str(float(row[11]) + add)
                     writer.writerow(row)
                 # If row doesnt have 16 columns, write it to the output file as is
                 else:
