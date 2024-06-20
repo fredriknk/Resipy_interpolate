@@ -35,8 +35,8 @@ if __name__ == '__main__':
     make_3d_topo_file = True
     excel_filename = "GPS_punkt_Slettebakken.xlsx"
 
-    framex = 20
-    framey = 20
+    framex = 20 #extend the map frame by 20m in x direction
+    framey = 20 #extend the map frame by 20m in y direction
 
     xls = pd.ExcelFile(excel_filename)
     for sheet in xls.sheet_names[:]:
