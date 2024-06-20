@@ -7,11 +7,8 @@ import rasterio
 import rasterio.plot
 import utm
 import math as m
-from owslib.wms import WebMapService
-import os
 import wcs_lib
-import syscal_converter
-
+import sys
 
 def make_string(df_):
     outstring = ""
@@ -26,21 +23,21 @@ def open_raster(filename="./geotiffs/data/dtm1_33_123_113.tif"):
     tiff = rasterio.open(filename)
     rasterio.plot.show(tiff, title=filename)
 
-
 def show_line(df, ax):
     ax.plot(df["X"].values, df["Y"].values, df["Z"].values, label=sheet)
-
 
 def poput_plot():
     matplotlib.use('TkAgg')
 
-
 if __name__ == '__main__':
 
-    make_topo_files = False
+    make_topo_files = True
     make_3d_topo_file = True
-
     excel_filename = "GPS_punkt_Slettebakken.xlsx"
+
+    framex = 20
+    framey = 20
+
     xls = pd.ExcelFile(excel_filename)
     for sheet in xls.sheet_names[:]:
         print(sheet)
@@ -52,23 +49,25 @@ if __name__ == '__main__':
             df.Y = xy[1]
 
         if df.iloc[0]["Type"] == "utm33":
-            latlon = utm.to_latlon(easting=df["X"], northing=df["Y"], zone_letter="N", zone_number=32)
-            xy = utm.from_latlon(latitude=latlon[0], longitude=latlon[1], force_zone_number=33, force_zone_letter="N")
+            latlon = utm.to_latlon(easting=df["X"], northing=df["Y"], zone_letter="N", zone_number=33)
+            xy = utm.from_latlon(latitude=latlon[0], longitude=latlon[1], force_zone_number=32, force_zone_letter="N")
             df.X = xy[0]
             df.Y = xy[1]
+
         sc = 0.1
         X_max = df.X.max()
         X_min = df.X.min()
         Y_max = df.Y.max()
         Y_min = df.Y.min()
 
-        framex = 20
-        framey = 20
-
         bbox = (int(X_min - framex), int(Y_min - framey), int(X_max + framex), int(Y_max + framey))
         print(f"Area is {int(X_max + framex)-int(X_min - framex)}m in X, {int(Y_max + framey)- int(Y_min - framey)} m in Y, does this sound reasonable? Y/N")
 
-        map_tiff, dtm_tiff = wcs_lib.get_data(bbox,resolution_map=0.2,png=False,DTM=False)
+        answer = input()
+        if answer == "N":
+            sys.exit()
+
+        map_tiff, dtm_tiff = wcs_lib.get_data(bbox,resolution_map=0.2,png=True,DTM=False)
         dtm_tiff_band1 = dtm_tiff.read(1)
 
         fig, ax = plt.subplots(1, figsize=(12, 15))
