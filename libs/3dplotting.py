@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     k.loadProject(".\Resipy_project\Resipy_datafil.resipy")
 
-    DTM_tiff = ".\\geodata\\535107-6559225-536164-6559700-Res_1_WCS.tif"
+    DTM_tiff = "./geodata/535107-6559225-536164-6559700-Res_1_WCS.tif"
 
     fn = DTM_tiff
     mesh = gg.visualization.read_raster(path=fn, nodata_val=0., name='Elevation [m]')
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     dem = rasterio.open(fn)
     band1 = dem.read(1)
 
-    map = ".\\geodata\\535107-6559225-536164-6559700-Res_0.5_WMS.tif"
+    map = "./geodata/535107-6559225-536164-6559700-Res_0.5_WMS.tif"
 
     src = rasterio.open(map)
     sb = src.bounds

@@ -144,7 +144,7 @@ def get_map_image(bbox, output_file,
 
 
 def get_data(bbox,
-             project_folder=".\\",
+             project_folder="./",
              resolution_map=1,
              resolution_dtm=1,
              png=True,
@@ -156,15 +156,15 @@ def get_data(bbox,
     output_name = f"{bbox[0]}-{bbox[1]}-{bbox[2]}-{bbox[3]}".replace(".", "_")
 
     if png_filename:
-        output_file_png = f"{project_folder}\\{png_filename}"
+        output_file_png = f"{project_folder}/{png_filename}"
 
     else:
-        output_file_png = f"{project_folder}\\{output_name}-Res_{resolution_map}_WMS.tif"
+        output_file_png = f"{project_folder}/{output_name}-Res_{resolution_map}_WMS.tif"
 
     if DTM_filename:
-        output_file_geotif = f"{project_folder}\\{DTM_filename}"
+        output_file_geotif = f"{project_folder}/{DTM_filename}"
     else:
-        output_file_geotif = f"{project_folder}\\{output_name}-Res_{resolution_dtm}_WCS.tif"
+        output_file_geotif = f"{project_folder}/{output_name}-Res_{resolution_dtm}_WCS.tif"
 
     if not os.path.exists(output_file_png):
         print(f"Downloading MAP data from bounding box {bbox}")

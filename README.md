@@ -22,6 +22,19 @@ files in the "syscal_files" folder and generate a 3d and 2d topo file for each f
 "topo3d_ALL" which is used in the batch conversion 
 
 ## Usage
+i would reccomend using docker to run the script, but you can also run it on your local machine.
+
+### Docker
+To run the script in docker, you will need to build the docker image first. You can do this by running the following command in the project folder:
+```bash
+docker build -t resipy_interpolate .
+```
+Then you can run the script by running the following command:
+```bash
+docker run -it --rm --name resipy_interpolate -v ${PWD}:/app resipy_interpolate
+```
+
+
 ### PyVista 3D view Controls:
  - Left Mouse moves the camera around the focus point
  - CTRL Left Mouse spins the camera around its view plane normal

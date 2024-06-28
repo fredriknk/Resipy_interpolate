@@ -7,8 +7,8 @@ import numpy as np
 
 def meshinvert3d(project_folder = ".",
                 syscal_folder = "syscal_files",
-                topo_file = "topofiles\\topo3d_ALL.csv",
-                surf_file = "topofiles\\surfaceplotxyz.csv",
+                topo_file = "topofiles/topo3d_ALL.csv",
+                surf_file = "topofiles/surfaceplotxyz.csv",
                 resipy_folder = "Resipy_project",
                 project_name = "Resipy_datafilreal3d",
                 project_type = "R3t",
@@ -28,10 +28,10 @@ def meshinvert3d(project_folder = ".",
     """
     project_name = f"{project_name}_{project_type}"
 
-    syscal_folder = f"{project_folder}\\{syscal_folder}"
-    topo_file = f"{project_folder}\\{topo_file}"
-    surf_file = f"{project_folder}\\{surf_file}"
-    resipy_folder = f"{project_folder}\\{resipy_folder}"
+    syscal_folder = f"{project_folder}/{syscal_folder}"
+    topo_file = f"{project_folder}/{topo_file}"
+    surf_file = f"{project_folder}/{surf_file}"
+    resipy_folder = f"{project_folder}/{resipy_folder}"
 
     k = Project(typ=project_type, dirname=resipy_folder)
 
@@ -69,15 +69,15 @@ def meshinvert3d(project_folder = ".",
         k.showResults( attr="Resistivity(log10)", edge_color="none", vmin=None, vmax=None, color_map="viridis", background_color=(0.8, 0.8, 0.8),pvslices=([], [], []), pvthreshold=None, pvdelaunay3d=False, pvgrid=True, pvcontour=[])
 
     datetimestring = time.strftime("%Y%m%d-%H%M%S")
-    savefilename = f"{resipy_folder}\\{datetimestring}_{project_name}.resipy"
+    savefilename = f"{resipy_folder}/{datetimestring}_{project_name}.resipy"
     k.saveProject(savefilename)
 
     return savefilename
 
 def meshinvertPseudo3d(project_folder = ".",
                 syscal_folder = "syscal_files",
-                topo_file = "topofiles\\topo3d_ALL.csv",
-                surf_file = "topofiles\\surfaceplotxyz.csv",
+                topo_file = "topofiles/topo3d_ALL.csv",
+                surf_file = "topofiles/surfaceplotxyz.csv",
                 resipy_folder = "Resipy_project",
                 project_name = "Resipy_datafilreal3d",
                 project_type = "R2",
@@ -97,10 +97,10 @@ def meshinvertPseudo3d(project_folder = ".",
     """
     project_name = f"{project_name}_{project_type}"
 
-    syscal_folder = f"{project_folder}\\{syscal_folder}"
-    topo_file = f"{project_folder}\\{topo_file}"
-    surf_file = f"{project_folder}\\{surf_file}"
-    resipy_folder = f"{project_folder}\\{resipy_folder}"
+    syscal_folder = f"{project_folder}/{syscal_folder}"
+    topo_file = f"{project_folder}/{topo_file}"
+    surf_file = f"{project_folder}/{surf_file}"
+    resipy_folder = f"{project_folder}/{resipy_folder}"
 
     k = Project(typ=project_type, dirname=resipy_folder)
 
@@ -137,7 +137,7 @@ def meshinvertPseudo3d(project_folder = ".",
         k.showResults(index=-1, cropMesh=False, color_map='jet', vmin=0.8, vmax=4, cropMaxDepth=False, clipContour=False)
 
     datetimestring = time.strftime("%Y%m%d-%H%M%S")
-    savefilename = f"{resipy_folder}\\{datetimestring}_{project_name}.resipy"
+    savefilename = f"{resipy_folder}/{datetimestring}_{project_name}.resipy"
     k.saveProject(savefilename)
 
     return savefilename

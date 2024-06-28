@@ -67,7 +67,7 @@ def print_area_dimensions(x_min, y_min, x_max, y_max, frame_x, frame_y):
     print(f"Area is {area_x}m in X, {area_y}m in Y, does this sound reasonable? Y/N")
 
 
-def main(project_folder=".\\Projects\\Example",
+def main(project_folder="./Projects/Example",
          excel_filename="GPS_kordinater.xlsx",
          **kwargs):
     """
@@ -110,11 +110,11 @@ def main(project_folder=".\\Projects\\Example",
 
     plt.ioff()
     print(f"Processing project in folder: {project_folder} with GPS data file: {excel_filename}")
-    xls = pd.ExcelFile(f"{project_folder}\\{excel_filename}")
+    xls = pd.ExcelFile(f"{project_folder}/{excel_filename}")
     for sheet in xls.sheet_names[:]:
         print(sheet)
         df = pd.read_excel(xls, sheet)
-        files_in_folder = os.listdir(f"{project_folder}\\syscal_files")
+        files_in_folder = os.listdir(f"{project_folder}/syscal_files")
         #Select only files in the df which exists in the syscal files folder using the ontains_substring(fn, files_in_folder):
         df = df[df["File"].apply(lambda x: contains_substring(x, files_in_folder))]
 
@@ -151,7 +151,7 @@ def main(project_folder=".\\Projects\\Example",
         if download_maps:
             print(f"Downloading maps with resolution: {resolution_map} and DTM with resolution: {resolution_dtm}")
             map_tiff, dtm_tiff = wcs_lib.get_data(bbox,
-                                                  f"{project_folder}\\geodata",
+                                                  f"{project_folder}/geodata",
                                                   resolution_map=resolution_map,
                                                   resolution_dtm=resolution_dtm,
                                                   png=False,
@@ -193,18 +193,18 @@ def main(project_folder=".\\Projects\\Example",
 
             if make_topo_files:
                 stringtopo = make_string(df_)
-                df_[["Elektrode", "X_", "Z"]].to_csv(f"{project_folder}\\topofiles\\topo" + fn + ".csv",
+                df_[["Elektrode", "X_", "Z"]].to_csv(f"{project_folder}/topofiles/topo" + fn + ".csv",
                                                      header=["label", "X", "Z"],
                                                      index=False)
             if make_3d_topo_file:
                 stringtopo = make_string(df_)
-                df_[["Elektrode", "X", "Y", "Z"]].to_csv(f"{project_folder}\\topofiles\\topo3d" + fn + ".csv",
+                df_[["Elektrode", "X", "Y", "Z"]].to_csv(f"{project_folder}/topofiles/topo3d" + fn + ".csv",
                                                          header=["label", "X", "Y", "Z"], index=False)
                 if i == 1:
-                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv(f"{project_folder}\\topofiles\\topo3d_ALL.csv",
+                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv(f"{project_folder}/topofiles/topo3d_ALL.csv",
                                                               header=["label", "x", "y", "z"], index=False)
                 else:
-                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv(f"{project_folder}\\topofiles\\topo3d_ALL.csv",
+                    df_[["Elektrode_", "X", "Y", "Z"]].to_csv(f"{project_folder}/topofiles/topo3d_ALL.csv",
                                                               index=False, mode='a',
                                                               header=False)
             i += 1
@@ -215,9 +215,9 @@ def main(project_folder=".\\Projects\\Example",
             ax2.legend()
             fig2.show()
         else:
-            fig.savefig(f"{project_folder}\\Overview.png")
+            fig.savefig(f"{project_folder}/Overview.png")
             ax2.legend()
-            fig2.savefig(f"{project_folder}\\profiles.png")
+            fig2.savefig(f"{project_folder}/profiles.png")
             plt.close(fig)
             plt.close(fig2)
 
@@ -308,29 +308,29 @@ def makeproject(project_folder,
     print(f"Creating project in folder: {project_folder} with GPS data file: {gps_filename}")
     ensure_folders_exist(project_folder, folders=["syscal_files", "topofiles", "Resipy_project", "geodata"])
     #if syscal folders are empty, then throw error and exit
-    if not os.listdir(f"{project_folder}\\syscal_files"):
-        print(f"Error: No files in {project_folder}\\syscal_files ! Remember to add files to the folder.")
+    if not os.listdir(f"{project_folder}/syscal_files"):
+        print(f"Error: No files in {project_folder}/syscal_files ! Remember to add files to the folder.")
         sys.exit(1)
 
     #if gps file is not found, then throw error and exit
-    if not os.path.exists(f"{project_folder}\\{gps_filename}"):
+    if not os.path.exists(f"{project_folder}/{gps_filename}"):
         print(f"Error: GPS file {gps_filename} not found in {project_folder}! Remember to add a gps file to the project folder")
         sys.exit(1)
 
     dtm_tiff, map_tiff, df = main(project_folder=project_folder,
                                   excel_filename=f"{gps_filename}",
                                   **kwargs)
-    export_geotiff_to_csv(dtm_tiff, output_csv_path=f"{project_folder}\\topofiles\\surfaceplotxyz.csv")
+    export_geotiff_to_csv(dtm_tiff, output_csv_path=f"{project_folder}/topofiles/surfaceplotxyz.csv")
     return dtm_tiff, map_tiff, df
 
 
 def make_all_projects(project_folder, gps_filename, **kwargs):
     for subproject in os.listdir(project_folder):
-        makeproject(f"{project_folder}\\{subproject}", gps_filename, )
+        makeproject(f"{project_folder}/{subproject}", gps_filename, )
 
 
 if __name__ == '__main__':
-    project_folder = "..\\Projects\\Example"
+    project_folder = "../Projects/Example"
     gps_filename = "GPS_kordinater.xlsx "
     makeproject(project_folder, gps_filename, resolution_map=1., resolution_dtm=1.)
 

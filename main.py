@@ -5,7 +5,7 @@ from libs import invertproject
 
 
 if __name__ == '__main__':
-    project_folder = ".\\Projects\\Sara"
+    project_folder = "./Projects/Sara"
     gps_filename = "GPS_kordinater.xlsx"
     processdata.make_all_projects( project_folder=project_folder,
                                    gps_filename=gps_filename,
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     folders = os.listdir(project_folder)
 
     for folder in folders:
-        project_folder_name = f"{project_folder}\\{folder}"
+        project_folder_name = f"{project_folder}/{folder}"
         print(f"wokring on {project_folder_name}")
         try:
             print(f"Starting 2d inversion for {project_folder_name}")
