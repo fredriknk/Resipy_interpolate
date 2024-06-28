@@ -1,0 +1,16 @@
+numpy
+matplotlib
+rasterio
+pandas
+scipy
+utm
+requests
+psutil
+pyvista==0.42.3
+chardet
+resipy
+owslib
+openpyxl
+PyQt5
+gemgis
+rioxarray

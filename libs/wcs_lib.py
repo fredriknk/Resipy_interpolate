@@ -1,3 +1,5 @@
+import sys
+
 from owslib.wcs import WebCoverageService
 import rasterio
 import rasterio.features
@@ -10,7 +12,20 @@ import utm
 import os
 import xml.etree.ElementTree as ET
 import requests
+import time
+import warnings
 
+from rasterio.errors import NotGeoreferencedWarning
+
+# Suppress specific warning
+warnings.filterwarnings('ignore', category=NotGeoreferencedWarning)
+
+
+"""
+WCS library for downloading data from a WCS service, and WMS library for downloading map data from a WMS service.
+its using the norwegian kartverket services, so only norwegian maps are avaliable at the moment. if you have a DTM and
+a map image you can specify the 
+"""
 
 def get_wcs_contents(wcs_url="https://wcs.geonorge.no/skwms1/wcs.hoyde-dtm-nhm-25832?service=wcs&request=getcapabilities"):
     """
@@ -52,7 +67,7 @@ def process_image_response(response):
 
 def download_coverage_data(bbox, output_file='downloaded_geotiff.tif',
                            wcs_url="https://wcs.geonorge.no/skwms1/wcs.hoyde-dtm-nhm-25832?",
-                           coverage_id='nhm_dtm_topo_25832_skyggerelieff', resx=10, resy=10,
+                           coverage_id='nhm_dtm_topo_25832', resx=10, resy=10,
                            output_crs='EPSG:25832', format_out='GeoTIFF'):
     """
     Download coverage data from a WCS service and save it to a GeoTIFF file.
@@ -75,7 +90,7 @@ def download_coverage_data(bbox, output_file='downloaded_geotiff.tif',
                         f"RESX={resx}&RESY={resy}&FORMAT={format_out}")
 
     # Make the request
-    response = requests.get(get_coverage_url)
+    response = requests.get(get_coverage_url,timeout=60)
 
     # Check if the request was successful
     if response.status_code == 200:
@@ -86,9 +101,12 @@ def download_coverage_data(bbox, output_file='downloaded_geotiff.tif',
         print("GeoTIFF downloaded successfully.")
     else:
         print("Failed to download GeoTIFF:", response.status_code)
+        print(
+            f"DRM download error, this ususally happens if map size is too big, try to reduce the resolution (set resolution_dtm to 2 or 3 for example) or reduce the extent of the project")
+        sys.exit(1)
 
 def get_map_image(bbox, output_file,
-                  resolution_map =0.5,
+                  resolution_map =1.0,
                   layer_name='ortofoto',
                   link='https://wms.geonorge.no/skwms1/wms.nib?service=WMS&request=GetCapabilities',
                   size=None,
@@ -103,10 +121,16 @@ def get_map_image(bbox, output_file,
         size = (int(bbox[2] - bbox[0])/resolution_map,int(bbox[3] - bbox[1])/resolution_map)  # (width, height)
 
     # Get the map image
-    img = wms.getmap(layers=[layer_name], srs='EPSG:25832', bbox=bbox, size=size, format=format, transparent=True)
+    try:
+        img = wms.getmap(layers=[layer_name], srs='EPSG:25832', bbox=bbox, size=size, format=format, transparent=True, timeout=60)
+    except Exception as e:
+        print(f"Error: {e}")
+        print(f"Map download error, this ususally happens if map size is too big, try to reduce the resolution (set resolution_map to 2 or 3 for example) or reduce the extent of the project")
+        sys.exit(1)
+
     image = Image.open(img)
-    image.save("geodata/tmpfile.png")
-    dataset = rasterio.open("geodata/tmpfile.png")
+    image.save(f"{output_file}tmp.png")
+    dataset = rasterio.open(f"{output_file}tmp.png")
     bands = [1, 2, 3]
     data = dataset.read(bands)
     transform = rasterio.transform.from_bounds(bbox[0], bbox[1], bbox[2], bbox[3], data.shape[1], data.shape[2])
@@ -119,32 +143,59 @@ def get_map_image(bbox, output_file,
         dst.write(data, indexes=bands)
 
 
-def get_data(bbox, resolution_map=1,resolution_dtm=1,png=True, DTM=True):
-    output_name = f"geodata/{bbox[0]}-{bbox[1]}-{bbox[2]}-{bbox[3]}".replace(".", "_")
+def get_data(bbox,
+             project_folder=".\\",
+             resolution_map=1,
+             resolution_dtm=1,
+             png=True,
+             DTM=True,
+             png_filename=None,
+             DTM_filename=None):
 
-    output_file_png = f"{output_name}-Res_{resolution_map}_WMS.tif"
+
+    output_name = f"{bbox[0]}-{bbox[1]}-{bbox[2]}-{bbox[3]}".replace(".", "_")
+
+    if png_filename:
+        output_file_png = f"{project_folder}\\{png_filename}"
+
+    else:
+        output_file_png = f"{project_folder}\\{output_name}-Res_{resolution_map}_WMS.tif"
+
+    if DTM_filename:
+        output_file_geotif = f"{project_folder}\\{DTM_filename}"
+    else:
+        output_file_geotif = f"{project_folder}\\{output_name}-Res_{resolution_dtm}_WCS.tif"
+
     if not os.path.exists(output_file_png):
         print(f"Downloading MAP data from bounding box {bbox}")
         get_map_image(bbox, output_file_png,resolution_map)
+        time.sleep(5)
     else:
         print(f"Data exists in: {output_file_png}")
 
-    map_tiff = rasterio.open(output_file_png)
+    try:
+        map_tiff = rasterio.open(output_file_png)
+    except rasterio.errors.RasterioIOError:
+        print(f"Error: Unable to open {output_file_png}")
+        map_tiff = None
+
     # Display the image
     if png:
         print(f"show map: {output_file_png}")
         rasterio.plot.show(map_tiff)
 
-    output_file_geotif = f"{output_name}-Res_{resolution_dtm}_WCS.tif"
-    # Download the coverage data and save it to disk
-
     if not os.path.exists(output_file_geotif):
         print(f"Downloading DTM data from bounding box {bbox}")
         download_coverage_data(bbox, output_file_geotif,resx=resolution_dtm,resy=resolution_dtm)
+        time.sleep(5)
     else:
         print(f"Data exists in: {output_file_geotif}")
 
-    dtm_tiff = rasterio.open(output_file_geotif)
+    try:
+        dtm_tiff = rasterio.open(output_file_geotif)
+    except rasterio.errors.RasterioIOError:
+        print(f"Error: Unable to open {output_file_geotif}")
+        dtm_tiff = None
 
     # Plot the downloaded raster data
     if DTM:
