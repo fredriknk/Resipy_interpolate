@@ -219,7 +219,7 @@ def meshinvertPseudo3d(project_folder = ".",
 
     print("Start Inversion with parralell processing")
     # k.param['b_wgt'] = 0.01
-    k.invertPseudo3D(runParallel=parralell_processing)
+    k.invertPseudo3D(runParallel=parralell_processing, **kwargs)
     print("Finished inversion")
     if show_outputs:
         k.showResults(index=-1, cropMesh=False, color_map='jet', cropMaxDepth=False, clipContour=False)
