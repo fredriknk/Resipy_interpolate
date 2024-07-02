@@ -19,7 +19,7 @@ if __name__ == '__main__':
         invertproject.meshinvertPseudo3d(   project_folder=project_folder_name,
                                             project_name="Sara_datapseudo3d",
                                             show_outputs=True
-                                            parrallel_processing=True
+                                            parrallel_processing=True )
 
         # invertproject.showpseudo3d(project_folder=project_folder_name)
         # plotting.showpseudo3d(project_folder=project_folder_name)
