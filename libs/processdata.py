@@ -4,7 +4,14 @@ import time
 import pandas as pd
 import matplotlib
 
-matplotlib.use('Qt5Agg')
+import os
+
+if os.environ.get('DISPLAY', '') == '':
+    print('No display found. Using non-interactive Agg backend.')
+    matplotlib.use('Agg')
+else:
+    matplotlib.use("Qt5Agg")
+
 import matplotlib.pyplot as plt
 import rasterio
 import rasterio.plot
@@ -16,7 +23,7 @@ else:
     import wcs_lib
 import sys
 import csv
-import os
+
 
 
 def contains_substring(substring, array):

@@ -1,5 +1,4 @@
 from resipy import Project
-#import geopandas as gpd
 import numpy as np
 import pandas as pd
 import time
@@ -9,7 +8,14 @@ import pyvista as pv
 import gemgis as gg
 import rasterio
 
-matplotlib.use("Qt5Agg")
+import os
+
+if os.environ.get('DISPLAY', '') == '':
+    print('No display found. Using non-interactive Agg backend.')
+    matplotlib.use('Agg')
+else:
+    matplotlib.use("Qt5Agg")
+
 import matplotlib.pyplot as plt
 
 def floatRgb(mag, cmin, cmax):
@@ -31,26 +37,51 @@ def strRgb(mag, cmin, cmax):
     """ Return a hex string, as used in Tk plots. """
     return "#%02x%02x%02x" % rgb(mag, cmin, cmax)
 
-if __name__ == '__main__':
-    timings = {}
-    t0 = time.time()
 
-    plot_boundry = True
+
+def get_file_name(project_folder, extension='.resipy'):
+    # Correct the use of the extension in the filter
+    files = [f for f in os.listdir(project_folder) if f.endswith(extension)]
+
+    # Check if no files are found
+    if not files:
+        print(f"No files with extension {extension} found.")
+        return None
+
+    if len(files) > 1:
+        print(f"Multiple {extension} files found, please select one:")
+        for i, f in enumerate(files):
+            print(f"{i}: {f}")
+        index = int(input("Enter index of file to load: "))
+    else:
+        index = 0
+
+    file = files[index]
+    return file
+def showpseudo3d(project_folder = ".",
+                resipy_folder = "Resipy_project",
+                map_folder = "geodata",
+                project_type = "R2",
+                show_outputs=False,
+                **kwargs):
+
+    plot_boundry = False
     plot_methane = False
 
-    k = Project(typ='R2')
+    k = Project(typ=project_type)
 
-    k.loadProject(".\Resipy_project\Resipy_datafil.resipy")
+    file = get_file_name(f"{project_folder}/{resipy_folder}", extension='.resipy')
+    k.loadProject(f"{project_folder}/{resipy_folder}/{file}")
 
-    DTM_tiff = "./geodata/535107-6559225-536164-6559700-Res_1_WCS.tif"
+    file = get_file_name(f"{project_folder}/{map_folder}", extension='WCS.tif')
+    mesh = gg.visualization.read_raster(path=f"{project_folder}/{map_folder}/{file}", nodata_val=0., name='Elevation [m]')
 
-    fn = DTM_tiff
-    mesh = gg.visualization.read_raster(path=fn, nodata_val=0., name='Elevation [m]')
-
-    dem = rasterio.open(fn)
+    dem = rasterio.open(f"{project_folder}/{map_folder}/{file}")
     band1 = dem.read(1)
 
-    map = "./geodata/535107-6559225-536164-6559700-Res_0.5_WMS.tif"
+    file = get_file_name(f"{project_folder}/{map_folder}", extension='WMS.tif')
+
+    map = f"{project_folder}/{map_folder}/{file}"
 
     src = rasterio.open(map)
     sb = src.bounds
@@ -147,7 +178,7 @@ if __name__ == '__main__':
     ax.add_mesh(topo, texture=texture)
     ax.set_background('white')
     ax.show_grid(color='black')
-    k.showPseudo3DMesh(cropMesh=True)
-    #
-    # k.showResults(index=-1, ax=ax, cropMesh=False, color_map='jet', vmin=0.8, vmax=4.1, cropMaxDepth=False, contour=True,
-    #               elec_color="k", elec_size=4., pvshow=True)
+    # k.showPseudo3DMesh(cropMesh=True)
+
+    k.showResults(index=-1, ax=ax, cropMesh=False, color_map='jet', vmin=0.8, vmax=4.1, cropMaxDepth=False, contour=True,
+                  elec_color="k", elec_size=4., pvshow=True)
