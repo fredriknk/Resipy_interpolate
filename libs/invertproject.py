@@ -211,7 +211,7 @@ def meshinvertPseudo3d(project_folder = ".",
     print("3d surface file imported\n")
 
     print("Meshing")
-    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=parralell_processing)
+    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=parralell_processing, **kwargs)
     if show_outputs:
         print("Meshing done,Showing mesh, look for meshwindow in app bar if it didnt pop up")
         k.showPseudo3DMesh(cropMesh=True)
