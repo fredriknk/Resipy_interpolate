@@ -18,7 +18,8 @@ if __name__ == '__main__':
         print(f"Starting 2d inversion for {project_folder_name}")
         invertproject.meshinvertPseudo3d(   project_folder=project_folder_name,
                                             project_name="Sara_datapseudo3d",
-                                            show_outputs=True)
+                                            show_outputs=True
+                                            parrallel_processing=True
 
         # invertproject.showpseudo3d(project_folder=project_folder_name)
         # plotting.showpseudo3d(project_folder=project_folder_name)

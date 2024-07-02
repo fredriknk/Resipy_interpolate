@@ -169,6 +169,7 @@ def meshinvertPseudo3d(project_folder = ".",
                 project_name = "Resipy_datafilreal3d",
                 project_type = "R2",
                 show_outputs=False,
+                parralell_processing=False,
                 **kwargs):
     """
     This function is used to create a 3d mesh and invert it using resipy
@@ -210,7 +211,7 @@ def meshinvertPseudo3d(project_folder = ".",
     print("3d surface file imported\n")
 
     print("Meshing")
-    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=True)
+    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=parralell_processing)
     if show_outputs:
         print("Meshing done,Showing mesh, look for meshwindow in app bar if it didnt pop up")
         k.showPseudo3DMesh(cropMesh=True)
@@ -218,7 +219,7 @@ def meshinvertPseudo3d(project_folder = ".",
 
     print("Start Inversion with parralell processing")
     # k.param['b_wgt'] = 0.01
-    k.invertPseudo3D(runParallel=False)
+    k.invertPseudo3D(runParallel=parralell_processing)
     print("Finished inversion")
     if show_outputs:
         k.showResults(index=-1, cropMesh=False, color_map='jet', cropMaxDepth=False, clipContour=False)
