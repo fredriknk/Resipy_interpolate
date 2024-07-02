@@ -211,7 +211,7 @@ def meshinvertPseudo3d(project_folder = ".",
     print("3d surface file imported\n")
 
     print("Meshing")
-    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=parralell_processing, **kwargs)
+    k.createMultiMesh(typ='trian', show_output=False, dump=None, runParallel=True, **kwargs)
     if show_outputs:
         print("Meshing done,Showing mesh, look for meshwindow in app bar if it didnt pop up")
         k.showPseudo3DMesh(cropMesh=True)
@@ -219,7 +219,7 @@ def meshinvertPseudo3d(project_folder = ".",
 
     print("Start Inversion with parralell processing")
     # k.param['b_wgt'] = 0.01
-    k.invertPseudo3D(runParallel=parralell_processing, **kwargs)
+    k.invertPseudo3D(runParallel=True, **kwargs)
     print("Finished inversion")
     if show_outputs:
         k.showResults(index=-1, cropMesh=False, color_map='jet', cropMaxDepth=False, clipContour=False)
