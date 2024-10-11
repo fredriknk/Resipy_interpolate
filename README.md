@@ -3,7 +3,7 @@
 Because of resipy dependency hell, use python version 3.8 and install dependencies using pip install -r requirements.txt. You can try other solutions if you want, but its the only one ive found which reliably works.
 ## Description
 This script is for interpolating GPS positions for a ERT measurement and georeferencing each position to a DTM map. 
-Then it creates a resipy psuedo3d project and premesh is.
+Then it creates a resipy psuedo3d project and premesh it so its ready to load directly into [resipy](https://gitlab.com/hkex/resipy).
 
 You will need to make an excel file with the following columns in the main folder of the project
 You can copy the table and paste it in the excel file to get the format right:
